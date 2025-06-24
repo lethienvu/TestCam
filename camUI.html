@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ứng Dụng Camera Vu - Thử nghiệm Module</title>
+</head>
+
+<body>
+    <h1>Chào mừng đến với Ứng Dụng Camera của Vu!</h1>
+    <p>Nhấn nút bên dưới để mở giao diện camera.</p>
+
+    <div id="app-root"></div>
+
+    <script type="module">
+        import { CameraApp } from './cameraModule.js';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM đã tải xong. Khởi tạo CameraApp bởi Vu.");
+
+            const myCameraApp = new CameraApp({
+                facingMode: 'environment',
+                autoStart: false,
+                onOpen: () => {
+                    console.log("Giao diện camera đã mở bởi Vu. 🎉");
+                },
+                onClose: () => {
+                    console.log("Giao diện camera đã đóng bởi Vu. 👋");
+                },
+                onPhotoTaken: (base64Image) => {
+                    console.log("Ảnh đã chụp Base64 bởi Vu:", base64Image.substring(0, 50) + "...");
+                }
+            });
+
+            myCameraApp.init();
+
+            const openCameraButton = document.createElement('button');
+            openCameraButton.textContent = 'Mở Camera (Vu)';
+            openCameraButton.style.padding = '15px 30px';
+            openCameraButton.style.fontSize = '20px';
+            openCameraButton.style.cursor = 'pointer';
+            openCameraButton.style.marginTop = '50px';
+            document.body.appendChild(openCameraButton);
+
+            openCameraButton.addEventListener('click', () => {
+                myCameraApp.open();
+            });
+        });
+    </script>
+</body>
+
+</html>
