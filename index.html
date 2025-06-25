@@ -373,23 +373,42 @@
             showLoading: (msg) => { console.log("Loading shown:", msg); /* Thêm logic hiển thị loading UI nếu cần */ },
             hideLoading: () => { console.log("Loading hidden"); /* Thêm logic ẩn loading UI nếu cần */ }
         };
+
+        // Biến để mock giá trị src của #imgUser
+        let mockImgUserSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='; // Base64 của ảnh 1x1 trong suốt
+
         // Mock jQuery selector for simplicity in this standalone file
-        // Note: For real app, ensure jQuery is properly loaded
         const $ = (selector) => {
             if (selector === "#imgUser") {
                 return {
                     attr: (key, value) => {
                         if (value !== undefined) {
                             // Setter
-                            console.log(`Setting #imgUser ${key}: ${value.substring(0, 50)}...`);
+                            console.log(`Setting #imgUser ${key}: ${value.substring(0, Math.min(value.length, 50))}...`);
+                            if (key === 'src') {
+                                mockImgUserSrc = value; // Lưu giá trị src đã set
+                            }
                             return $(selector); // Return chainable
                         } else {
                             // Getter
-                            // Cung cấp một giá trị giả lập cho src
-                            return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='; // Base64 của ảnh 1x1 trong suốt
+                            if (key === 'src') {
+                                return mockImgUserSrc; // Trả về giá trị src đã mock
+                            }
+                            return ''; // Default for other attributes
                         }
                     },
-                    textContent: "" // Mock textContent for imgUser
+                    text: (value) => { // Adding .text() for jQuery
+                        const el = document.getElementById('imgUser');
+                        if (el) {
+                            if (value !== undefined) {
+                                el.textContent = value;
+                                console.log(`Setting #imgUser textContent: ${value}`);
+                            } else {
+                                return el.textContent;
+                            }
+                        }
+                        return $(selector);
+                    }
                 };
             } else if (selector === "#captured-image") {
                 return {
@@ -398,7 +417,7 @@
                         if (img) {
                             if (value !== undefined) {
                                 img[key] = value;
-                                console.log(`Setting #captured-image ${key}: ${value.substring(0, 50)}...`);
+                                console.log(`Setting #captured-image ${key}: ${value.substring(0, Math.min(value.length, 50))}...`);
                             } else {
                                 return img[key];
                             }
@@ -417,36 +436,65 @@
             } else if (selector === "#imageContainer") {
                  return {
                     empty: () => {
-                        const container = document.getElementById('testCapturedPhotoDisplay').parentNode;
-                        console.log('Clearing #imageContainer content.');
+                        const container = document.getElementById('imageContainer'); // Lấy container thật
+                        if (container) {
+                            console.log('Clearing #imageContainer content.');
+                            while (container.firstChild) {
+                                container.removeChild(container.lastChild);
+                            }
+                        }
                         return $(selector);
                     },
                     append: (element) => {
-                        const container = document.getElementById('testCapturedPhotoDisplay').parentNode;
-                        console.log('Appending to #imageContainer:', element.id);
+                        const container = document.getElementById('imageContainer'); // Lấy container thật
+                        if (container && element) {
+                            console.log('Appending to #imageContainer:', element.id || element.outerHTML.substring(0, 50) + '...');
+                            // Append real element if it's a DOM node, otherwise convert to text
+                            if (element.nodeType) { // Check if it's a DOM node
+                                container.appendChild(element);
+                            } else {
+                                // If it's a jQuery wrapped object, get the first element
+                                container.appendChild(element[0] || document.createTextNode(String(element)));
+                            }
+                        }
                         return $(selector);
                     }
                  }
             }
+            // Mock other selectors to prevent errors
             return {
-                attr: () => '', // Default mock for other selectors
+                attr: () => '',
                 css: () => {},
                 empty: () => {},
-                append: () => {}
+                append: () => {},
+                textContent: '' // Fallback for direct textContent access
             };
         };
 
 
-        let window = { ImageAvatarTmp: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" }; // Base64 của ảnh 1x1 trong suốt
-        let addTextToImage = (data) => console.log('Hàm addTextToImage được gọi với dữ liệu (Base64):', data.substring(0, 50) + '...');
-        let confirmImage = (a1, data) => console.log('Hàm confirmImage được gọi với a1:', a1.substring(0, 50) + '...', 'và data:', data.substring(0, 50) + '...');
+        // Sửa lỗi: Truy cập trực tiếp vào window.ImageAvatarTmp thay vì khai báo lại window
+        window.ImageAvatarTmp = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; // Base64 của ảnh 1x1 trong suốt
+        let addTextToImage = (data) => console.log('Hàm addTextToImage được gọi với dữ liệu (Base64):', data.substring(0, Math.min(data.length, 50)) + '...');
+        let confirmImage = (a1, data) => console.log('Hàm confirmImage được gọi với a1:', a1.substring(0, Math.min(a1.length, 50)) + '...', 'và data:', data.substring(0, Math.min(data.length, 50)) + '...');
         let textOverlay = document.createElement('div'); // Tạo một div giả lập
         textOverlay.textContent = "Tên Mặc Định";
         let workingName = "Vũ Thiên"; // Giả định tên làm việc
         let tempdata = null; // Giả định biến tempdata
+
+        // Mock warningDiv và imgUser element trực tiếp trong DOM để xử lý style/textContent
         let warningDiv = document.createElement('div'); // Tạo một div giả lập
+        warningDiv.id = 'warningDivMock'; // Đặt ID để có thể truy cập
         warningDiv.style.display = "none"; // Mặc định ẩn
         document.body.appendChild(warningDiv); // Thêm vào DOM để tránh lỗi reference
+
+        // Tạo element #imgUser nếu chưa có để .style và .textContent hoạt động
+        if (!document.getElementById('imgUser')) {
+            const imgUserPlaceholder = document.createElement('img');
+            imgUserPlaceholder.id = 'imgUser';
+            imgUserPlaceholder.src = 'data:image/png;base64,' + window.ImageAvatarTmp;
+            imgUserPlaceholder.style.display = 'none'; // Keep hidden
+            document.body.appendChild(imgUserPlaceholder);
+        }
 
         // --- Bắt đầu JavaScript của CameraModule ---
 
@@ -700,11 +748,13 @@
                 const photoBase64 = await window.CameraModule.open(); // Gọi qua window.CameraModule
 
                 if (photoBase64) {
-                    console.log("Ảnh đã được chụp từ camera:", photoBase64.substring(0, 50) + "...");
+                    console.log("Ảnh đã được chụp từ camera:", photoBase64.substring(0, Math.min(photoBase64.length, 50)) + "...");
 
                     let a1;
-                    if ($("#imgUser").attr("src") && $("#imgUser").attr("src").split(",")[1].toString() !== window.ImageAvatarTmp) {
-                        a1 = $("#imgUser").attr("src").split(",")[1].toString();
+                    // Lấy src từ #imgUser mock
+                    const imgUserSrc = $("#imgUser").attr("src").toString();
+                    if (imgUserSrc.split(",")[1].toString() !== window.ImageAvatarTmp) {
+                        a1 = imgUserSrc.split(",")[1].toString();
                     } else {
                         a1 = window.ImageAvatarTmp;
                     }
@@ -735,15 +785,18 @@
                     } else {
                         $("#captured-image").attr(
                             "src",
-                            "data:image/png;base64,"
+                            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" // Chuỗi Base64 1x1 trong suốt
                         );
                         $("#captured-image").css('display', 'none');
-                        if (typeof warningDiv !== 'undefined') {
-                            warningDiv.style.display = "flex";
+                        // Sử dụng .style và .textContent trực tiếp với element đã tạo hoặc jQuery mock
+                        const warningDivElement = document.getElementById('warningDivMock');
+                        if (warningDivElement) {
+                            warningDivElement.style.display = "flex";
                         }
-                        if (document.getElementById("imgUser")) {
-                            document.getElementById("imgUser").style.marginLeft = ".25rem";
-                            document.getElementById("imgUser").textContent =
+                        const imgUserElement = document.getElementById("imgUser");
+                        if (imgUserElement) {
+                            imgUserElement.style.marginLeft = ".25rem";
+                            imgUserElement.textContent =
                                 " " + `%YouHaveNotTakenPhoto%`;
                         }
                     }
@@ -760,15 +813,17 @@
                 } else {
                     $("#captured-image").attr(
                         "src",
-                        "data:image/png;base64,"
+                        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" // Chuỗi Base64 1x1 trong suốt
                     );
                     $("#captured-image").css('display', 'none');
-                    if (typeof warningDiv !== 'undefined') {
-                        warningDiv.style.display = "flex";
+                    const warningDivElement = document.getElementById('warningDivMock');
+                    if (warningDivElement) {
+                        warningDivElement.style.display = "flex";
                     }
-                    if (document.getElementById("imgUser")) {
-                        document.getElementById("imgUser").style.marginLeft = ".25rem";
-                        document.getElementById("imgUser").textContent =
+                    const imgUserElement = document.getElementById("imgUser");
+                    if (imgUserElement) {
+                        imgUserElement.style.marginLeft = ".25rem";
+                        imgUserElement.textContent =
                             " " + `%YouHaveNotTakenPhoto%`;
                     }
                 }
@@ -784,13 +839,32 @@
 
         // Khởi tạo CameraModule khi DOM đã sẵn sàng
         document.addEventListener('DOMContentLoaded', () => {
+            // Đảm bảo các phần tử giả định #imgUser và #imageContainer tồn tại trước khi CameraModule.init() được gọi
+            // Tạo element #imgUser nếu chưa có để .style và .textContent hoạt động
+            if (!document.getElementById('imgUser')) {
+                const imgUserPlaceholder = document.createElement('img');
+                imgUserPlaceholder.id = 'imgUser';
+                imgUserPlaceholder.src = 'data:image/png;base64,' + window.ImageAvatarTmp;
+                imgUserPlaceholder.style.display = 'none'; // Keep hidden
+                document.body.appendChild(imgUserPlaceholder);
+            }
+            if (!document.getElementById('imageContainer')) {
+                const imgContainerPlaceholder = document.createElement('div');
+                imgContainerPlaceholder.id = 'imageContainer';
+                imgContainerPlaceholder.style.border = '1px dashed grey';
+                imgContainerPlaceholder.style.minHeight = '100px';
+                imgContainerPlaceholder.style.marginTop = '20px';
+                imgContainerPlaceholder.textContent = 'Image Container Placeholder';
+                document.body.appendChild(imgContainerPlaceholder);
+            }
+
             window.CameraModule.init();
 
             // Gán sự kiện cho các nút test
             document.getElementById('openCameraBtn').addEventListener('click', async () => {
                 try {
                     const photoBase64 = await window.CameraModule.open();
-                    console.log('Ảnh chụp qua openCameraBtn (Base64):', photoBase64.substring(0, 50) + '...');
+                    console.log('Ảnh chụp qua openCameraBtn (Base64):', photoBase64.substring(0, Math.min(photoBase64.length, 50)) + '...');
                     window.CameraModule.displayCapturedPhoto(photoBase64);
                     document.getElementById('hideCapturedPhotoBtn').style.display = 'inline-block';
                 } catch (error) {
@@ -811,24 +885,6 @@
                 window.CameraModule.hideCapturedPhoto();
                 document.getElementById('hideCapturedPhotoBtn').style.display = 'none';
             });
-
-            // Tạo các phần tử giả định nếu chúng chưa tồn tại trong HTML chính của bạn
-            if (!document.getElementById('imgUser')) {
-                const imgUserPlaceholder = document.createElement('img');
-                imgUserPlaceholder.id = 'imgUser';
-                imgUserPlaceholder.src = 'data:image/png;base64,' + window.ImageAvatarTmp;
-                imgUserPlaceholder.style.display = 'none'; // Keep hidden
-                document.body.appendChild(imgUserPlaceholder);
-            }
-            if (!document.getElementById('imageContainer')) {
-                const imgContainerPlaceholder = document.createElement('div');
-                imgContainerPlaceholder.id = 'imageContainer';
-                imgContainerPlaceholder.style.border = '1px dashed grey';
-                imgContainerPlaceholder.style.minHeight = '100px';
-                imgContainerPlaceholder.style.marginTop = '20px';
-                imgContainerPlaceholder.textContent = 'Image Container Placeholder';
-                document.body.appendChild(imgContainerPlaceholder);
-            }
         });
     </script>
 </body>
