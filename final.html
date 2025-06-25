@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Chấm Công - Camera</title>
+    <!-- Module CameraModule.js sẽ tự động thêm CSS -->
+</head>
+<body>
+    <h1>Ứng dụng Chấm Công</h1>
+    <button id="openCameraButton">Mở Camera Chấm Công</button>
+    <button id="hidePhotoButton" style="display: none; margin-top: 10px;">Ẩn ảnh</button>
+
+    <script type="module">
+        // Import module CameraModule.js
+        import CameraModule from 'https://cdn.jsdelivr.net/gh/lethienvu/VaoCaUIModule@2f92655/camModule.js';
+
+        // Khởi tạo module khi DOM đã sẵn sàng (nên gọi một lần duy nhất)/
+        document.addEventListener('DOMContentLoaded', () => {
+            CameraModule.init();
+        });//
+//123
+        const openCameraButton = document.getElementById('openCameraButton');
+        const hidePhotoButton = document.getElementById('hidePhotoButton');
+
+        // Xử lý sự kiện khi nút "Mở Camera" được click 123
+        openCameraButton.addEventListener('click', async () => {
+            try {
+                // Mở camera và đợi người dùng chụp ảnh
+                const photoBase64 = await CameraModule.open();
+                console.log('Ảnh đã chụp (Base64):', photoBase64.substring(0, 50) + '...'); // Log một phần của chuỗi Base64
+                // Hiển thị ảnh đã chụp
+                CameraModule.displayCapturedPhoto(photoBase64);
+                hidePhotoButton.style.display = 'block'; // Hiển thị nút ẩn ảnh
+                alert('Ảnh đã chụp thành công! Kiểm tra console để xem chuỗi Base64.');
+                // Tại đây bạn có thể gửi photoBase64 này lên server hoặc xử lý tiếp
+            } catch (error) {
+                console.error('Lỗi khi thao tác với camera:', error);
+                if (error.message !== 'Camera operation cancelled by user.') {
+                    // Hiển thị lỗi cho người dùng, trừ khi họ chủ động hủy
+                    alert('Đã xảy ra lỗi khi mở hoặc chụp ảnh: ' + error.message);
+                }
+                CameraModule.hideCapturedPhoto(); // Ẩn ảnh cũ nếu có lỗi hoặc hủy
+                hidePhotoButton.style.display = 'none';
+            }
+        });
+
+        // Xử lý sự kiện khi nút "Ẩn ảnh" được click
+        hidePhotoButton.addEventListener('click', () => {
+            CameraModule.hideCapturedPhoto();
+            hidePhotoButton.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
