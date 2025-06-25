@@ -1,155 +1,58 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo Camera Module</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        .controls {
-            margin-bottom: 30px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .controls button {
-            padding: 12px 25px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .controls button:hover {
-            transform: translateY(-2px);
-        }
-
-        .controls button:active {
-            transform: translateY(0);
-        }
-
-        #openCameraBtn {
-            background-color: #28a745;
-            color: white;
-        }
-
-        #openCameraBtn:hover {
-            background-color: #218838;
-        }
-
-        #closeCameraBtn {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        #closeCameraBtn:hover {
-            background-color: #c82333;
-        }
-
-        #hideCapturedPhotoBtn {
-            background-color: #007bff;
-            color: white;
-        }
-
-        #hideCapturedPhotoBtn:hover {
-            background-color: #0056b3;
-        }
-
-        #capturedImageDisplay {
-            max-width: 80%;
-            height: auto;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: none; /* Hidden by default */
-        }
-    </style>
+    <title>Ứng dụng Chấm Công - Camera</title>
+    <!-- Module CameraModule.js sẽ tự động thêm CSS//// -->
 </head>
+
 <body>
-    <h1>Demo Camera Module</h1>
-
-    <div class="controls">
-        <button id="openCameraBtn">Mở Camera</button>
-        <button id="closeCameraBtn">Đóng Camera</button>
-        <button id="hideCapturedPhotoBtn" style="display: none;">Ẩn Ảnh Đã Chụp</button>
-    </div>
-
-    <img id="capturedImageDisplay" alt="Ảnh đã chụp từ camera">
+    <h1>Ứng dụng Chấm Công</h1>
+    <button id="openCameraButton">Mở Camera Chấm Công</button>
+    <button id="hidePhotoButton" style="display: none; margin-top: 10px;">Ẩn ảnh</button>
 
     <script type="module">
-        // Import CameraModule từ URL của bạn
-        // Đảm bảo URL này là chính xác và file camModule.js đã được cập nhật
-        import CameraModule from 'https://cdn.jsdelivr.net/gh/lethienvu/VaoCaUIModule/camModule.js';
+        // Import module CameraModule.js
+        import CameraModule from 'https://cdn.jsdelivr.net/gh/lethienvu/VaoCaUIModule@9b2dc74/camModule.js';
 
-        // Lấy tham chiếu đến các phần tử DOM
-        const openCameraBtn = document.getElementById('openCameraBtn');
-        const closeCameraBtn = document.getElementById('closeCameraBtn');
-        const hideCapturedPhotoBtn = document.getElementById('hideCapturedPhotoBtn');
-        const capturedImageDisplay = document.getElementById('capturedImageDisplay');
-
-        // Hàm xử lý khi ảnh được chụp hoặc khi người dùng hủy bỏ
-        async function handleCameraAction() {
-            try {
-                // Gọi phương thức open() của CameraModule.
-                // Hàm này trả về một Promise, giải quyết với ảnh Base64 nếu chụp thành công.
-                const photoBase64 = await CameraModule.open();
-
-                if (photoBase64) {
-                    console.log("Ảnh đã được chụp (Base64 length):", photoBase64.length);
-                    // Hiển thị ảnh đã chụp
-                    capturedImageDisplay.src = photoBase64;
-                    capturedImageDisplay.style.display = 'block';
-                    hideCapturedPhotoBtn.style.display = 'inline-block'; // Hiện nút ẩn ảnh
-                    alert('Ảnh đã được chụp thành công!');
-                } else {
-                    console.log("Người dùng đã hủy chụp ảnh.");
-                    alert('Thao tác chụp ảnh đã bị hủy bỏ.');
-                }
-            } catch (error) {
-                console.error('Lỗi khi mở camera hoặc chụp ảnh:', error);
-                alert('Có lỗi xảy ra với camera: ' + error.message);
-            }
-        }
-
-        // Gán sự kiện click cho các nút
-        openCameraBtn.addEventListener('click', handleCameraAction);
-
-        closeCameraBtn.addEventListener('click', () => {
-            CameraModule.close(); // Gọi phương thức close() để đóng giao diện camera
-            capturedImageDisplay.style.display = 'none'; // Ẩn ảnh đã chụp
-            capturedImageDisplay.src = ''; // Xóa nguồn ảnh
-            hideCapturedPhotoBtn.style.display = 'none'; // Ẩn nút ẩn ảnh
-            console.log("Camera đã đóng.");
-        });
-
-        hideCapturedPhotoBtn.addEventListener('click', () => {
-            capturedImageDisplay.style.display = 'none';
-            capturedImageDisplay.src = '';
-            hideCapturedPhotoBtn.style.display = 'none';
-            console.log("Ảnh đã ẩn.");
-        });
-
+        // Khởi tạo module khi DOM đã sẵn sàng (nên gọi một lần duy nhất)/
         document.addEventListener('DOMContentLoaded', () => {
             CameraModule.init();
-            console.log("CameraModule đã được khởi tạo.");
+        });//
+        //123
+        const openCameraButton = document.getElementById('openCameraButton');
+        const hidePhotoButton = document.getElementById('hidePhotoButton');
+
+        // Xử lý sự kiện khi nút "Mở Camera" được click 123
+        openCameraButton.addEventListener('click', async () => {
+            try {
+                // Mở camera và đợi người dùng chụp ảnh
+                const photoBase64 = await CameraModule.open();
+                console.log('Ảnh đã chụp (Base64):', photoBase64.substring(0, 50) + '...'); // Log một phần của chuỗi Base64
+                // Hiển thị ảnh đã chụp
+                CameraModule.displayCapturedPhoto(photoBase64);
+                hidePhotoButton.style.display = 'block'; // Hiển thị nút ẩn ảnh
+                alert('Ảnh đã chụp thành công! Kiểm tra console để xem chuỗi Base64.');
+                // Tại đây bạn có thể gửi photoBase64 này lên server hoặc xử lý tiếp
+            } catch (error) {
+                console.error('Lỗi khi thao tác với camera:', error);
+                if (error.message !== 'Camera operation cancelled by user.') {
+                    // Hiển thị lỗi cho người dùng, trừ khi họ chủ động hủy
+                    alert('Đã xảy ra lỗi khi mở hoặc chụp ảnh: ' + error.message);
+                }
+                CameraModule.hideCapturedPhoto(); // Ẩn ảnh cũ nếu có lỗi hoặc hủy
+                hidePhotoButton.style.display = 'none';
+            }
+        });
+
+        // Xử lý sự kiện khi nút "Ẩn ảnh" được click
+        hidePhotoButton.addEventListener('click', () => {
+            CameraModule.hideCapturedPhoto();
+            hidePhotoButton.style.display = 'none';
         });
     </script>
 </body>
+
 </html>
